@@ -1,4 +1,7 @@
 #supabase tennis_scoreboard_data password: 00v2LrrgBdhsc0pD
+#API Documentation: http://127.0.0.1:8000/docs
+
+#To Do: make front end be able to get and post!! Verify that what I did in get and post are correct.
 
 from typing import Union
 from fastapi import FastAPI
@@ -12,10 +15,6 @@ load_dotenv()  # take environment variables from .env.
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_API_KEY")
 supabase: Client = create_client(url, key)
-
-response = supabase.table('scoreboard_data').select("*").execute()
-data, count = supabase.table('scoreboard_data').upsert({'id': 1, 'points': 45}).execute()
-
 
 app = FastAPI()
 
@@ -31,38 +30,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/test/")
+def test():
+    response = supabase.table('scoreboard_data').select("*").execute() #get data from Supabase
+    data, count = supabase.table('scoreboard_data').upsert({'id': 1, 'points': 0}).execute() #update Supabase
+    return response   
+
 @app.post("/scoreboard_input")
+def scoreboardInput(scoreboardData: dict):
+    data, count = supabase.table('scoreboard_data').upsert({'id': 0, 'player_name' : scoreboardData['player_name'][0], 'points': scoreboardData['points'][0], 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':scoreboardData['prev_sets'][0]},{'id': 1, 'player_name' : scoreboardData['player_name'][1], 'points': scoreboardData['points'][1], 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':scoreboardData['prev_sets'][1]}).execute()
+    return scoreboardData
 
-
-@app.get("/scoreboard_data/player_names")
+#gets player name information. Will usually only need to get at the beginning
+@app.get("/player_names")
 def my_name():
-    players = ['Koji Tanaka', 'Masanori Tanaka']
-    return players
+    response = supabase.table('scoreboard_data').select("player_name").execute()
+    return response
 
-@app.get("/scoreboard_data/prev_sets")
-def prev_sets():
-    prevSets = [[6,0],[6,0]]
-    return prevSets
+#gets other scoreboard info. Will need to get everytime you need to refresh
+@app.get("/scoreboard_data")
+def scoreboardData():
+    response = supabase.table('scoreboard_data').select("*").execute()
+    return response
 
-@app.get("/scoreboard_data/sets")
-def sets():
-    sets = [2,0]
-    return sets
-
-@app.get("/scoreboard_data/games")
-def games():
-    games = [5,5]
-    return games
-
-@app.get("/scoreboard_data/points")
-def points():
-    points = [15,15]
-    return points
-
-@app.get("/serve_data")
-def serves():
-    serve_data = []
-    return serve_data
 
 
 
