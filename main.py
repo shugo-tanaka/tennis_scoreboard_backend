@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()  # take environment variables from .env.
 
@@ -38,7 +39,22 @@ def test():
 
 @app.post("/scoreboard_input")
 def scoreboardInput(scoreboardData: dict):
-    data, count = supabase.table('scoreboard_data').upsert({'id': 0, 'player_name' : scoreboardData['player_name'][0], 'points': scoreboardData['points'][0], 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':scoreboardData['prev_sets'][0]},{'id': 1, 'player_name' : scoreboardData['player_name'][1], 'points': scoreboardData['points'][1], 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':scoreboardData['prev_sets'][1]}).execute()
+    # Log the received data
+    logging.info("Received data: %s", scoreboardData)
+    if scoreboardData['prev_sets'][0]:
+        upsert_data = [
+            {'id': 0, 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':scoreboardData['prev_sets'][0]},
+            {'id': 1, 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':scoreboardData['prev_sets'][1]}
+        ]
+    else:
+        upsert_data = [
+            {'id': 0, 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0]},
+            {'id': 1, 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1]}
+        ]
+
+    
+    # Perform the upsert operation
+    data, count = supabase.table('scoreboard_data').upsert(upsert_data).execute()
     return scoreboardData
 
 #gets player name information. Will usually only need to get at the beginning
