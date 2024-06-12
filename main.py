@@ -1,7 +1,7 @@
 #supabase tennis_scoreboard_data password: 00v2LrrgBdhsc0pD
 #API Documentation: http://127.0.0.1:8000/docs
 
-#To Do: make front end be able to get and post!! Verify that what I did in get and post are correct.
+#To Do: frontend update is delayed. 
 
 from typing import Union
 from fastapi import FastAPI
@@ -10,6 +10,7 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import logging
+import numpy as np
 
 load_dotenv()  # take environment variables from .env.
 
@@ -43,8 +44,8 @@ def scoreboardInput(scoreboardData: dict):
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
         upsert_data = [
-            {'id': 0, 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':scoreboardData['prev_sets'][0]},
-            {'id': 1, 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':scoreboardData['prev_sets'][1]}
+            {'id': 0, 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':str(scoreboardData['prev_sets'][0])},
+            {'id': 1, 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':str(scoreboardData['prev_sets'][1])}
         ]
     else:
         upsert_data = [
