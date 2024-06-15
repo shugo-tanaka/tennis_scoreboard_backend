@@ -1,8 +1,8 @@
 #supabase tennis_scoreboard_data password: 00v2LrrgBdhsc0pD
 #API Documentation: http://127.0.0.1:8000/docs
 
-#To Do: frontend update is delayed. 
-
+#To Do: need to update the table in supabase so that each point gets logged into a column. This way we can log every point!! Also need to be able to undo a point - maybe get previous from supabase?
+#to add a new row in Supabase, need to change the ID#.
 from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,16 +41,17 @@ def test():
 @app.post("/scoreboard_input")
 def scoreboardInput(scoreboardData: dict):
     # Log the received data
+    response = supabase.table('scoreboard_data').select('id').execute()
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
         upsert_data = [
-            {'id': 0, 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':str(scoreboardData['prev_sets'][0])},
-            {'id': 1, 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':str(scoreboardData['prev_sets'][1])}
+            {'id': response.data[0]['id'], 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':str(scoreboardData['prev_sets'][0])},
+            {'id': response.data[1]['id'], 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':str(scoreboardData['prev_sets'][1])}
         ]
     else:
         upsert_data = [
-            {'id': 0, 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0]},
-            {'id': 1, 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1]}
+            {'id': response.data[0]['id'], 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0],'previous_sets':str([])},
+            {'id': response.data[1]['id'], 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1],'previous_sets':str([])}
         ]
 
     
