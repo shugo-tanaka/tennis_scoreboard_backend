@@ -3,6 +3,7 @@
 
 #To Do: need to update the table in supabase so that each point gets logged into a column. This way we can log every point!! Also need to be able to undo a point - maybe get previous from supabase?
 #to add a new row in Supabase, need to change the ID#.
+#create a different table that houses other info like logistics.
 from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,22 +42,25 @@ def test():
 @app.post("/scoreboard_input")
 def scoreboardInput(scoreboardData: dict):
     # Log the received data
-    response = supabase.table('scoreboard_data').select('id').execute()
+    response = supabase.table('scoreboard_data_v2').select('id').execute()
+
+    id = 0
+    if len(response.data) != 0:
+        id = response.data[-1]['id'] + 1
+
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
         upsert_data = [
-            {'id': response.data[0]['id'], 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0], 'previous_sets':str(scoreboardData['prev_sets'][0])},
-            {'id': response.data[1]['id'], 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1], 'previous_sets':str(scoreboardData['prev_sets'][1])}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':str(scoreboardData['prev_sets'][0]), 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':str(scoreboardData['prev_sets'][1])}
         ]
     else:
         upsert_data = [
-            {'id': response.data[0]['id'], 'points': str(scoreboardData['points'][0]), 'games' : scoreboardData['games'][0], 'sets' : scoreboardData['sets'][0],'previous_sets':str([])},
-            {'id': response.data[1]['id'], 'points': str(scoreboardData['points'][1]), 'games' : scoreboardData['games'][1], 'sets' : scoreboardData['sets'][1],'previous_sets':str([])}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_2':str([]), 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':str([])}
         ]
 
     
     # Perform the upsert operation
-    data, count = supabase.table('scoreboard_data').upsert(upsert_data).execute()
+    data, count = supabase.table('scoreboard_data_v2').upsert(upsert_data).execute()
     return scoreboardData
 
 #gets player name information. Will usually only need to get at the beginning
