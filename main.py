@@ -1,9 +1,10 @@
 #supabase tennis_scoreboard_data password: 00v2LrrgBdhsc0pD
 #API Documentation: http://127.0.0.1:8000/docs
 
-#To Do: need to update the table in supabase so that each point gets logged into a column. This way we can log every point!! Also need to be able to undo a point - maybe get previous from supabase?
-#to add a new row in Supabase, need to change the ID#.
-#create a different table that houses other info like logistics.
+#populate match_data and then create a column in scoreboard_data_v2 that has a game ID base on match_data. purpose: to access data for a particular match
+#get front end to populate match_data somehow.
+#create a redo button. Similar to undo button. Maybe track a row as deleted or not deleted. at the end of the match, just delete the rows with deleted == True.
+
 from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -68,6 +69,17 @@ def scoreboardInput(scoreboardData: dict):
 def my_name():
     response = supabase.table('scoreboard_data').select("player_name").execute()
     return response
+
+@app.get("/undo_score")
+def undoScore():
+    lastId_response = supabase.table('scoreboard_data_v2').select("id").order("id", desc = True).limit(1).execute()
+    if lastId_response.data[0]['id']:
+           
+        delete_row = supabase.table('scoreboard_data_v2').delete().eq('id', lastId_response.data[0]['id']).execute()
+
+        response = supabase.table('scoreboard_data_v2').select("*").execute()
+        return response.data[-1]
+    return None
 
 #gets other scoreboard info. Will need to get everytime you need to refresh
 @app.get("/scoreboard_data")
