@@ -52,11 +52,11 @@ def scoreboardInput(scoreboardData: dict):
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':str(scoreboardData['prev_sets'][0]), 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':str(scoreboardData['prev_sets'][1])}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':scoreboardData['prev_sets'][0], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':scoreboardData['prev_sets'][1]}
         ]
     else:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_2':str([]), 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':str([])}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_1':[], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':[]}
         ]
 
     
@@ -77,8 +77,8 @@ def undoScore():
            
         delete_row = supabase.table('scoreboard_data_v2').delete().eq('id', lastId_response.data[0]['id']).execute()
 
-        response = supabase.table('scoreboard_data_v2').select("*").execute()
-        return response.data[-1]
+        response = supabase.table('scoreboard_data_v2').select('*').execute()
+        return response
     return None
 
 #gets other scoreboard info. Will need to get everytime you need to refresh
