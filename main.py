@@ -3,7 +3,8 @@
 
 #populate match_data and then create a column in scoreboard_data_v2 that has a game ID base on match_data. purpose: to access data for a particular match
 #get front end to populate match_data somehow.
-#create a redo button. Similar to undo button. Maybe track a row as deleted or not deleted. at the end of the match, just delete the rows with deleted == True.
+# (done)create a redo button. Similar to undo button. Maybe track a row as deleted or not deleted. at the end of the match, just delete the rows with deleted == True.
+#receive playerNames from frontend, send to supabase.
 
 from typing import Union
 from fastapi import FastAPI
@@ -39,6 +40,14 @@ def test():
     response = supabase.table('scoreboard_data').select("*").execute() #get data from Supabase
     data, count = supabase.table('scoreboard_data').upsert({'id': 1, 'points': 0}).execute() #update Supabase
     return response   
+
+@app.post("/match_data")
+def matchData(matchData: dict):
+    logging.info("Received data: %s", matchData)
+    delete_row = supabase.table('match_data').delete().eq('id', 0).execute()
+    upsert_data = [{'date': matchData['date'], 'start_time':matchData['startTime'], 'player_1':matchData['player1Name'], 'player_2':matchData['player2Name']}]
+    data,count = supabase.table('match_data').upsert(upsert_data).execute()
+    return matchData
 
 @app.post("/scoreboard_input")
 def scoreboardInput(scoreboardData: dict):
