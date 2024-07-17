@@ -2,9 +2,8 @@
 #API Documentation: http://127.0.0.1:8000/docs
 
 #populate match_data and then create a column in scoreboard_data_v2 that has a game ID base on match_data. purpose: to access data for a particular match
-#get front end to populate match_data somehow.
-# (done)create a redo button. Similar to undo button. Maybe track a row as deleted or not deleted. at the end of the match, just delete the rows with deleted == True.
-#receive playerNames from frontend, send to supabase.
+
+#delete all other rows in match data after submit is pressed so that only one updated row exists.
 
 from typing import Union
 from fastapi import FastAPI
@@ -61,11 +60,11 @@ def scoreboardInput(scoreboardData: dict):
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':scoreboardData['prev_sets'][0], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':scoreboardData['prev_sets'][1]}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':scoreboardData['prev_sets'][0], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':scoreboardData['prev_sets'][1], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1]}
         ]
     else:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_1':[], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':[]}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_1':[], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':[], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1]}
         ]
 
     
