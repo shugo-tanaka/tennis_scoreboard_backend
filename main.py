@@ -1,9 +1,6 @@
 #supabase tennis_scoreboard_data password: 00v2LrrgBdhsc0pD
 #API Documentation: http://127.0.0.1:8000/docs
 
-#populate match_data and then create a column in scoreboard_data_v2 that has a game ID base on match_data. purpose: to access data for a particular match
-
-#delete all other rows in match data after submit is pressed so that only one updated row exists.
 
 from typing import Union
 from fastapi import FastAPI
@@ -43,8 +40,8 @@ def test():
 @app.post("/match_data")
 def matchData(matchData: dict):
     logging.info("Received data: %s", matchData)
-    delete_row = supabase.table('match_data').delete().eq('id', 0).execute()
-    upsert_data = [{'date': matchData['date'], 'start_time':matchData['startTime'], 'player_1':matchData['player1Name'], 'player_2':matchData['player2Name']}]
+    delete_row = supabase.table('match_data').delete().execute()
+    upsert_data = [{'date': matchData['date'],  'player_1':matchData['player1Name'], 'player_2':matchData['player2Name']}]
     data,count = supabase.table('match_data').upsert(upsert_data).execute()
     return matchData
 
@@ -60,11 +57,11 @@ def scoreboardInput(scoreboardData: dict):
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':scoreboardData['prev_sets'][0], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':scoreboardData['prev_sets'][1], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1]}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':scoreboardData['prev_sets'][0], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':scoreboardData['prev_sets'][1], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1],'date': scoreboardData['date']}
         ]
     else:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_1':[], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':[], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1]}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_1':[], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':[], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1],'date': scoreboardData['date']}
         ]
 
     
@@ -75,8 +72,8 @@ def scoreboardInput(scoreboardData: dict):
 #gets player name information. Will usually only need to get at the beginning
 @app.get("/player_names")
 def my_name():
-    response = supabase.table('scoreboard_data').select("player_name").execute()
-    return response
+    response = supabase.table('match_data').select("*").execute()
+    return [response.data[-1]['player_1'], response.data[-1]['player_2']]
 
 @app.get("/undo_score")
 def undoScore():
