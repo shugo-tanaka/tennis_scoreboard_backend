@@ -1,5 +1,7 @@
 #supabase tennis_scoreboard_data password: 00v2LrrgBdhsc0pD
 #API Documentation: http://127.0.0.1:8000/docs
+# when match info gets updated, update previous logs. 
+# when I click the points too fast, supabase doesn't update properly. 
 
 
 from typing import Union
@@ -49,10 +51,13 @@ def matchData(matchData: dict):
 def scoreboardInput(scoreboardData: dict):
     # Log the received data
     response = supabase.table('scoreboard_data_v2').select('id').execute()
+    
 
     id = 0
     if len(response.data) != 0:
-        id = response.data[-1]['id'] + 1
+        x = response.data
+        x.sort(key = lambda x: x['id'])
+        id = x[-1]['id'] + 1
 
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
@@ -89,8 +94,8 @@ def undoScore():
 #gets other scoreboard info. Will need to get everytime you need to refresh
 @app.get("/scoreboard_data")
 def scoreboardData():
-    response = supabase.table('scoreboard_data').select("*").execute()
-    return response
+    response = supabase.table('scoreboard_data_v2').select("*").execute()
+    return response.data[-1]
 
 
 
