@@ -47,6 +47,14 @@ def matchData(matchData: dict):
     data,count = supabase.table('match_data').upsert(upsert_data).execute()
     return matchData
 
+@app.post("/serve_locations")
+def serveLocations(serveLoc: list):
+    logging.info("Received data: %s", serveLoc)
+    if serveLoc:
+        upsert_data_serve = [{'x':serveLoc[-1][0], 'y':serveLoc[-1][1], 'ball_text':serveLoc[-1][2]}]
+        data,count = supabase.table('serve_locations').upsert(upsert_data_serve).execute()
+    return serveLoc
+
 @app.post("/scoreboard_input")
 def scoreboardInput(scoreboardData: dict):
     # Log the received data
