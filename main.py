@@ -4,7 +4,7 @@
 # when I click the points too fast, supabase doesn't update properly. 
 
 
-from typing import Union
+from typing import Union, List, Dict, Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -48,11 +48,19 @@ def matchData(matchData: dict):
     return matchData
 
 @app.post("/serve_locations")
-def serveLocations(serveLoc: list):
+def serveLocations(serveLoc: dict):
     logging.info("Received data: %s", serveLoc)
-    if serveLoc:
-        upsert_data_serve = [{'x':serveLoc[-1][0], 'y':serveLoc[-1][1], 'ball_text':serveLoc[-1][2]}]
-        data,count = supabase.table('serve_locations').upsert(upsert_data_serve).execute()
+    
+    if serveLoc['sX']:
+        x = serveLoc['sX']
+        y = serveLoc['sY']
+        ballText = serveLoc['sBallText']
+    else:
+        x = []
+        y = []
+        ballText = []
+    upsert_data_serve = [{'x':x, 'y':y, 'ball_text':ballText}]
+    data,count = supabase.table('serve_locations').upsert(upsert_data_serve).execute()
     return serveLoc
 
 @app.post("/scoreboard_input")
@@ -70,11 +78,11 @@ def scoreboardInput(scoreboardData: dict):
     logging.info("Received data: %s", scoreboardData)
     if scoreboardData['prev_sets'][0]:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':scoreboardData['prev_sets'][0], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':scoreboardData['prev_sets'][1], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1],'date': scoreboardData['date']}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0], 'prev_sets_1':scoreboardData['prev_sets'][0], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1], 'prev_sets_2':scoreboardData['prev_sets'][1], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1],'date': scoreboardData['date'], 'server': scoreboardData['selectedServer']}
         ]
     else:
         upsert_data = [
-            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_1':[], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':[], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1],'date': scoreboardData['date']}
+            {'id': id, 'points_1': str(scoreboardData['points'][0]), 'games_1' : scoreboardData['games'][0], 'curr_sets_1' : scoreboardData['sets'][0],'prev_sets_1':[], 'points_2': str(scoreboardData['points'][1]), 'games_2' : scoreboardData['games'][1], 'curr_sets_2' : scoreboardData['sets'][1],'prev_sets_2':[], 'player1':scoreboardData['player_name'][0], 'player2':scoreboardData['player_name'][1],'date': scoreboardData['date'], 'server': scoreboardData['selectedServer']}
         ]
 
     
@@ -103,7 +111,20 @@ def undoScore():
 @app.get("/scoreboard_data")
 def scoreboardData():
     response = supabase.table('scoreboard_data_v2').select("*").execute()
-    return response.data[-1]
+    x = response.data
+    x.sort(key = lambda i: i['id'])
+    # print(x[-1])
+    return x[-1]
+
+#get serveCircleData for frontend
+@app.get("/serve_circles")
+def servCircles():
+    response = supabase.table('serve_locations').select("*").execute()
+    
+    if len(response.data) > 0:
+        logging.info("About to send data: %s", response.data[-1])
+        return response.data[-1]
+    return None
 
 
 
