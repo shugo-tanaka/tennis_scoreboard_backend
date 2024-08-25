@@ -17,12 +17,13 @@ load_dotenv()  # take environment variables from .env.
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_API_KEY")
+host_link: str = os.environ.get("FRONTEND_URL")
 supabase: Client = create_client(url, key)
 
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",  # Add your React app's URL here
+    host_link,  # Add your React app's URL here
 ]
 
 app.add_middleware(
