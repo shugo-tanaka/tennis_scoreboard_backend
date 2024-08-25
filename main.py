@@ -13,12 +13,15 @@ from dotenv import load_dotenv
 import logging
 import numpy as np
 
+
 load_dotenv()  # take environment variables from .env.
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_API_KEY")
 host_link: str = os.environ.get("FRONTEND_URL")
 supabase: Client = create_client(url, key)
+
+print(host_link)
 
 app = FastAPI()
 
